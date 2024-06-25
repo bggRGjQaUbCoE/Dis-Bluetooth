@@ -16,7 +16,10 @@ import com.example.bluetooth.close.MainActivity.Companion.TAG
 class BluetoothReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
-        if (ContextCompat.checkSelfPermission(context, PERMISSION) == 0) {
+        if (intent.action == "STOP_SERVICE") {
+            val serviceIntent = Intent(context, BluetoothService::class.java)
+            context.stopService(serviceIntent)
+        } else if (ContextCompat.checkSelfPermission(context, PERMISSION) == 0) {
             when (val action = intent.action) {
                 BluetoothDevice.ACTION_ACL_CONNECTED, BluetoothDevice.ACTION_ACL_DISCONNECTED -> {
                     val isConnected = action == BluetoothDevice.ACTION_ACL_CONNECTED

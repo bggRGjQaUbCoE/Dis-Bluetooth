@@ -2,6 +2,7 @@ package com.example.bluetooth.close
 
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.bluetooth.BluetoothDevice
 import android.content.Context
@@ -46,10 +47,13 @@ class BluetoothService : Service() {
                 "Device : ${device?.name} (${device?.address})"
             )
             device?.let {
-                startForegroundService()
 
                 val pref = getSharedPreferences("settings", MODE_PRIVATE)
-                val time = (pref.getInt(HOUR, 0) * 3600 + pref.getInt(MINUTE, 30) * 60) * 1000L
+                val hour = pref.getInt(HOUR, 0)
+                val minute = pref.getInt(MINUTE, 30)
+                val time = (hour * 3600 + minute * 60) * 1000L
+
+                startForegroundService(hour, minute)
 
                 timer.schedule(object : TimerTask() {
                     override fun run() {
@@ -66,17 +70,22 @@ class BluetoothService : Service() {
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun startForegroundService() {
+    private fun startForegroundService(hour: Int, minute: Int) {
         val importance = NotificationManager.IMPORTANCE_DEFAULT
         val channel = NotificationChannel(CHANNEL_ID, CHANNEL_NAME, importance)
         val notificationManager =
             getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManager.createNotificationChannel(channel)
 
+        val intent = Intent(this, BluetoothReceiver::class.java)
+        intent.setAction("STOP_SERVICE")
+        val stopIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_IMMUTABLE)
+
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(getString(R.string.app_name))
-            .setContentText("Running")
+            .setContentText("LIMIT: ${if (hour != 0) "${hour}h" else ""}${minute}min")
+            .addAction(R.mipmap.ic_launcher, "STOP", stopIntent)
             .build()
         startForeground(NOTIFICATION_ID, notification)
     }
