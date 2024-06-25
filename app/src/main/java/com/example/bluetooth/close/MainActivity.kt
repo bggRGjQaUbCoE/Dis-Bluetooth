@@ -30,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -115,10 +116,9 @@ fun MainScreen(
 ) {
     var showTimePicker by remember { mutableStateOf(false) }
     val pref = LocalContext.current.getSharedPreferences("settings", MODE_PRIVATE)
-    val state = TimePickerState(
+    val state = rememberTimePickerState(
         initialHour = pref.getInt(HOUR, 0),
         initialMinute = pref.getInt(MINUTE, 30),
-        is24Hour = is24HourFormat(LocalContext.current)
     )
 
     Scaffold(
@@ -149,9 +149,7 @@ fun MainScreen(
             onCancel = { showTimePicker = false },
             onConfirm = {
                 pref.edit().putInt(HOUR, state.hour).apply()
-                pref.edit().putInt(MINUTE, with(state.minute) {
-                    if (this == 0 && state.hour == 0) 1 else this
-                }).apply()
+                pref.edit().putInt(MINUTE, state.minute).apply()
                 showTimePicker = false
             },
         ) {

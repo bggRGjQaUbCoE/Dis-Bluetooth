@@ -11,6 +11,7 @@ import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import com.example.bluetooth.close.BluetoothHelper.disconnectDevice
 import com.example.bluetooth.close.MainActivity.Companion.HOUR
 import com.example.bluetooth.close.MainActivity.Companion.MINUTE
 import com.example.bluetooth.close.MainActivity.Companion.PERMISSION
@@ -53,8 +54,7 @@ class BluetoothService : Service() {
                 timer.schedule(object : TimerTask() {
                     override fun run() {
                         try {
-                            val removeBondMethod = it.javaClass.getMethod("removeBond")
-                            removeBondMethod.invoke(it)
+                            disconnectDevice(this@BluetoothService, it)
                         } catch (e: Exception) {
                             e.printStackTrace()
                         }
